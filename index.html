@@ -180,7 +180,7 @@
 
     <script>
         const config = {
-            scriptURL: "https://script.google.com/macros/s/AKfycbwCHL1DcoH5H7dRNF0iugqOlkE4gmcAyJW5YBqXC5NYcl6irs7WRbpSz9SUbHBaaaVXOw/exec",
+            scriptURL: "https://script.google.com/macros/s/AKfycbzpmJnkTNogiK01x0O2eoxcHAk1O5d-XGD1R1UZQ05ZaiEu6DIPz5V_-nDL58FO6IX_QQ/exec",
             minTimeBetweenRequests: 1000 
         };
 
@@ -265,7 +265,7 @@
       const result = JSON.parse(data);
       
       if (Array.isArray(result)) {
-        if (result[0] === "[not_found]") {
+        if (result[0] === "not_found") {
           showError("No ID found for this email. Please use the email you registered with Nobel.");
         } else if (result[0] === "invalid_request") {
           showError("Something went wrong. Please try again.");
