@@ -245,63 +245,47 @@
             findExplorerID(email);
         });
         
-        function findExplorerID(email) {
-            isProcessing = true;
-            lastRequestTime = Date.now();
-            elements.submitButton.disabled = true;
-            
-            elements.spinner.style.display = "block";
-            elements.resultDiv.innerHTML = "";
-            
-            fetch(`${config.scriptURL}?email=${encodeURIComponent(email)}`, {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json'
-                }
-            })
-            .then(response => response.text())
-            .then(data => {
-                try {
-                    const result = JSON.parse(data);
-                    
-                    if (Array.isArray(result)) {
-                        if (result[0] === "not_found") {
-                            showError("No ID found for this email. Please use the email you registered with Nobel.");
-                        } else if (result[0] === "error" || result[0] === "invalid_request") {
-                            showError("Something went wrong. Please try again.");
-                        } else if (result[0] === "rate_limited") {
-                            showError("Too many requests. Please wait a moment before trying again.");
-                        } else {
-                            displayIds(result);
-                        }
-                    } 
-                    else if (result.status) {
-                        if (result.status === "error") {
-                            showError(result.message || "An error occurred. Please try again later.");
-                        } else if (result.status === "success" && result.ids?.length > 0) {
-                            displayIds(result.ids);
-                        } else {
-                            showError("No ID found for this email. Please use the email you registered with Nobel.");
-                        }
-                    } 
-                    else {
-                        showError("Unexpected response. Please try again later.");
-                    }
-                } catch (e) {
-                    showError("Error processing server response. Please try again later.");
-                    console.error("Error parsing JSON:", e);
-                }
-            })
-            .catch(error => {
-                showError("Connection problem. Please try again later.");
-                console.error("Fetch error:", error);
-            })
-            .finally(() => {
-                isProcessing = false;
-                elements.spinner.style.display = "none";
-                elements.submitButton.disabled = false;
-            });
-        }
+      function findExplorerID(email) {
+  isProcessing = true;
+  lastRequestTime = Date.now();
+  elements.submitButton.disabled = true;
+  
+  elements.spinner.style.display = "block";
+  elements.resultDiv.innerHTML = "";
+  
+  fetch(`${config.scriptURL}?email=${encodeURIComponent(email)}`, {
+    method: 'GET',
+    headers: {
+      'Accept': 'application/json'
+    }
+  })
+  .then(response => response.text())
+  .then(data => {
+    try {
+      const result = JSON.parse(data);
+      
+      if (result.status === "error") {
+        showError(result.message || "No ID found for this email. Please use the email you registered with Nobel.");
+      } else if (result.status === "success" && result.ids?.length > 0) {
+        displayIds(result.ids);
+      } else {
+        showError("No ID found for this email. Please use the email you registered with Nobel.");
+      }
+    } catch (e) {
+      showError("Error processing server response. Please try again later.");
+      console.error("Error parsing JSON:", e);
+    }
+  })
+  .catch(error => {
+    showError("Connection problem. Please try again later.");
+    console.error("Fetch error:", error);
+  })
+  .finally(() => {
+    isProcessing = false;
+    elements.spinner.style.display = "none";
+    elements.submitButton.disabled = false;
+  });
+}
         
         const sanitizerTemplate = document.createElement('template');
         function sanitizeHtml(text) {
