@@ -89,6 +89,12 @@
             transform: translateY(1px);
         }
 
+        button:disabled {
+            background: #8a8a8a;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         #result {
             margin-top: 25px;
             min-height: 50px;
@@ -142,6 +148,19 @@
             box-shadow: 0 3px 10px rgba(0,0,0,0.15);
             text-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
+
+        .invalid {
+            border: 2px solid #ff6b6b;
+        }
+
+        .validation-message {
+            color: #ff6b6b;
+            font-size: 0.9rem;
+            text-align: left;
+            margin-top: -10px;
+            margin-bottom: 10px;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -149,83 +168,171 @@
         <h3>Look Up Your Explorer ID</h3>
         <p class="instruction">Enter the email address you used when signing up for Nobel</p>
 
-        <input type="email" id="userEmail" placeholder="Email address" autofocus>
-        <button id="fetchID">Search</button>
+        <form id="idLookupForm">
+            <input type="email" id="userEmail" placeholder="Email address" autofocus>
+            <div id="emailValidation" class="validation-message">Please enter a valid email address</div>
+            <button type="submit" id="fetchID">Search</button>
+        </form>
         
         <div class="loading" id="loadingSpinner"></div>
         <div id="result"></div>
     </div>
 
     <script>
-    
-        const scriptURL = "https://script.google.com/macros/s/AKfycbwpLdnumxCL5N-Gk7gWTT4YRr5LKIfCAhA36eJ9shXwFGhJE4_uFwjQuEc0SSHl0MhbbA/exec";
-        
-        document.getElementById("fetchID").addEventListener("click", function() {
-            const email = document.getElementById("userEmail").value.trim();
-            if (!email) {
-                alert("Please enter your Nobel email address");
+        const config = {
+            scriptURL: "https://script.google.com/macros/s/AKfycbx2fMZfgUyt_PjI-lf8wYaX4QrQRaR2W8rCGZHiJPX3fwUVSCbocCIENCHDlXJ6f7aD2w/exec",
+            minTimeBetweenRequests: 1000 
+        };
+
+        const elements = {
+            form: document.getElementById("idLookupForm"),
+            email: document.getElementById("userEmail"),
+            emailValidation: document.getElementById("emailValidation"),
+            submitButton: document.getElementById("fetchID"),
+            resultDiv: document.getElementById("result"),
+            spinner: document.getElementById("loadingSpinner")
+        };
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        let lastRequestTime = 0;
+        let isProcessing = false;
+
+        function isValidEmail(email) {
+            return emailRegex.test(email);
+        }
+
+        let validationTimeout;
+        elements.email.addEventListener("input", function() {
+            clearTimeout(validationTimeout);
+            
+            validationTimeout = setTimeout(() => {
+                const email = elements.email.value.trim();
+                
+                if (email && !isValidEmail(email)) {
+                    elements.email.classList.add("invalid");
+                    elements.emailValidation.style.display = "block";
+                } else {
+                    elements.email.classList.remove("invalid");
+                    elements.emailValidation.style.display = "none";
+                }
+                
+                elements.submitButton.disabled = !email || (email && !isValidEmail(email)) || isProcessing;
+            }, 200);
+        });
+
+        elements.form.addEventListener("submit", function(event) {
+            event.preventDefault();
+            
+            const email = elements.email.value.trim();
+            const now = Date.now();
+            
+            if (!email || isProcessing || (now - lastRequestTime < config.minTimeBetweenRequests)) {
+                if (now - lastRequestTime < config.minTimeBetweenRequests) {
+                    showError("Please wait a moment before trying again.");
+                } else if (!email) {
+                    showError("Email is required.");
+                }
+                return;
+            }
+            
+            if (!isValidEmail(email)) {
+                elements.email.classList.add("invalid");
+                elements.emailValidation.style.display = "block";
                 return;
             }
             
             findExplorerID(email);
         });
         
-        document.getElementById("userEmail").addEventListener("keypress", function(event) {
-            if (event.key === "Enter") {
-                document.getElementById("fetchID").click();
-            }
-        });
-        
         function findExplorerID(email) {
-            const resultDiv = document.getElementById("result");
-            const spinner = document.getElementById("loadingSpinner");
+            isProcessing = true;
+            lastRequestTime = Date.now();
+            elements.submitButton.disabled = true;
             
-            // Show loading spinner
-            spinner.style.display = "block";
-            resultDiv.innerHTML = "";
+            elements.spinner.style.display = "block";
+            elements.resultDiv.innerHTML = "";
             
-            // Create the URL with the email parameter
-            const url = `${scriptURL}?email=${encodeURIComponent(email)}`;
-            
-            fetch(url)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error("Network response was not ok");
-                    }
-                    return response.text();
-                })
-                .then(data => {
-                    try {
-                        const result = JSON.parse(data);
-                        
+            fetch(`${config.scriptURL}?email=${encodeURIComponent(email)}`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.text())
+            .then(data => {
+                try {
+                    const result = JSON.parse(data);
+                    
+                    if (Array.isArray(result)) {
                         if (result[0] === "not_found") {
-                            resultDiv.innerHTML = "<p class='error'>No ID found for this email.<br>Please use the email you registered with Nobel.</p>";
-                        } else if (result[0] === "invalid_request") {
-                            resultDiv.innerHTML = "<p class='error'>Something went wrong.<br>Please try again.</p>";
+                            showError("No ID found for this email. Please use the email you registered with Nobel.");
+                        } else if (result[0] === "error" || result[0] === "invalid_request") {
+                            showError("Something went wrong. Please try again.");
+                        } else if (result[0] === "rate_limited") {
+                            showError("Too many requests. Please wait a moment before trying again.");
                         } else {
-                            let idsHtml = "";
-                            result.forEach(id => {
-                                idsHtml += `<div class="highlight-id">${id}</div>`;
-                            });
-                            
-                            resultDiv.innerHTML = `
-                                <p class='success'>Here ${result.length > 1 ? 'are' : 'is'} your Explorer ID${result.length > 1 ? 's' : ''}:</p>
-                                ${idsHtml}
-                            `;
+                            displayIds(result);
                         }
-                    } catch (e) {
-                        // If JSON parsing fails, show the raw response
-                        resultDiv.innerHTML = "<p class='error'>Error getting your ID.<br>Please try again later.</p>";
+                    } 
+                    else if (result.status) {
+                        if (result.status === "error") {
+                            showError(result.message || "An error occurred. Please try again later.");
+                        } else if (result.status === "success" && result.ids?.length > 0) {
+                            displayIds(result.ids);
+                        } else {
+                            showError("No ID found for this email. Please use the email you registered with Nobel.");
+                        }
+                    } 
+                    else {
+                        showError("Unexpected response. Please try again later.");
                     }
-                })
-                .catch(error => {
-                    resultDiv.innerHTML = "<p class='error'>Connection problem.<br>Please try again later.</p>";
-                    console.error("Error:", error);
-                })
-                .finally(() => {
-                    // Hide loading spinner
-                    spinner.style.display = "none";
-                });
+                } catch (e) {
+                    showError("Error processing server response. Please try again later.");
+                    console.error("Error parsing JSON:", e);
+                }
+            })
+            .catch(error => {
+                showError("Connection problem. Please try again later.");
+                console.error("Fetch error:", error);
+            })
+            .finally(() => {
+                isProcessing = false;
+                elements.spinner.style.display = "none";
+                elements.submitButton.disabled = false;
+            });
+        }
+        
+        const sanitizerTemplate = document.createElement('template');
+        function sanitizeHtml(text) {
+            if (!text) return '';
+            sanitizerTemplate.innerHTML = '';
+            sanitizerTemplate.textContent = text;
+            return sanitizerTemplate.innerHTML;
+        }
+        
+        function showError(message) {
+            elements.resultDiv.innerHTML = `<p class='error'>${sanitizeHtml(message)}</p>`;
+        }
+        
+        function displayIds(ids) {
+            if (!ids || !ids.length) return;
+            
+            const fragment = document.createDocumentFragment();
+            const successMsg = document.createElement('p');
+            successMsg.className = 'success';
+            successMsg.textContent = `Here ${ids.length > 1 ? 'are' : 'is'} your Explorer ID${ids.length > 1 ? 's' : ''}:`;
+            fragment.appendChild(successMsg);
+            
+            ids.forEach(id => {
+                const idDiv = document.createElement('div');
+                idDiv.className = 'highlight-id';
+                idDiv.textContent = id;
+                fragment.appendChild(idDiv);
+            });
+            
+            elements.resultDiv.innerHTML = '';
+            elements.resultDiv.appendChild(fragment);
         }
     </script>
 </body>
