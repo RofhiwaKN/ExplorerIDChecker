@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Explorer ID Lookup</title>
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src https://script.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com https://fonts.googleapis.com; script-src 'self'">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -90,12 +89,6 @@
             transform: translateY(1px);
         }
 
-        button:disabled {
-            background: #8a4444;
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-
         #result {
             margin-top: 25px;
             min-height: 50px;
@@ -149,12 +142,6 @@
             box-shadow: 0 3px 10px rgba(0,0,0,0.15);
             text-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
-
-        #cooldown {
-            font-size: 0.9rem;
-            margin-top: 10px;
-            color: #ffb3b3;
-        }
     </style>
 </head>
 <body>
@@ -164,98 +151,27 @@
 
         <input type="email" id="userEmail" placeholder="Email address" autofocus>
         <button id="fetchID">Search</button>
-        <div id="cooldown"></div>
         
         <div class="loading" id="loadingSpinner"></div>
         <div id="result"></div>
     </div>
 
     <script>
-       
-        const scriptURL = "https://script.google.com/macros/s/AKfycbwjoDoDPp402oQKIuPtJ_U1cn1YLTUhC4DYxdBuu88CsOxArsNaJ_QwdNIOQBqTZ00a/exec";
-        
-   
-        const RATE_LIMIT = 4; 
-        const RATE_LIMIT_PERIOD = 60000; 
-        const COOLDOWN_TIME = 15000;
-        
-        let requestCount = 0;
-        let requestTimes = [];
-        let buttonCooldown = false;
-        
-        // Function to sanitize user input
-        function sanitizeInput(input) {
-            return input.replace(/[<>"'&]/g, '');
-        }
-        
-        // Function to validate email format
-        function isValidEmail(email) {
-            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            return emailPattern.test(email);
-        }
+    
+        const scriptURL = "https://script.google.com/macros/s/AKfycbwpLdnumxCL5N-Gk7gWTT4YRr5LKIfCAhA36eJ9shXwFGhJE4_uFwjQuEc0SSHl0MhbbA/exec";
         
         document.getElementById("fetchID").addEventListener("click", function() {
-            const emailInput = document.getElementById("userEmail");
-            const email = emailInput.value.trim();
-            
-            // Input validation
+            const email = document.getElementById("userEmail").value.trim();
             if (!email) {
                 alert("Please enter your Nobel email address");
                 return;
             }
             
-            if (!isValidEmail(email)) {
-                alert("Please enter a valid email address");
-                return;
-            }
-            
-            // Rate limiting check
-            const now = Date.now();
-            
-            // Remove request timestamps older than the rate limit period
-            requestTimes = requestTimes.filter(time => now - time < RATE_LIMIT_PERIOD);
-            
-            if (requestTimes.length >= RATE_LIMIT) {
-                const cooldownDiv = document.getElementById("cooldown");
-                cooldownDiv.textContent = `Too many requests. Please try again later.`;
-                return;
-            }
-            
-            if (buttonCooldown) {
-                return;
-            }
-            
-            // Add current request timestamp
-            requestTimes.push(now);
-            
-            // Apply button cooldown
-            const button = document.getElementById("fetchID");
-            button.disabled = true;
-            buttonCooldown = true;
-            
-            const cooldownDiv = document.getElementById("cooldown");
-            let remainingTime = COOLDOWN_TIME / 1000;
-            
-            cooldownDiv.textContent = `Please wait ${remainingTime} seconds before trying again`;
-            
-            const cooldownInterval = setInterval(() => {
-                remainingTime--;
-                if (remainingTime > 0) {
-                    cooldownDiv.textContent = `Please wait ${remainingTime} seconds before trying again`;
-                } else {
-                    clearInterval(cooldownInterval);
-                    cooldownDiv.textContent = "";
-                    button.disabled = false;
-                    buttonCooldown = false;
-                }
-            }, 1000);
-            
-            // Proceed with the request
-            findExplorerID(sanitizeInput(email));
+            findExplorerID(email);
         });
         
         document.getElementById("userEmail").addEventListener("keypress", function(event) {
-            if (event.key === "Enter" && !document.getElementById("fetchID").disabled) {
+            if (event.key === "Enter") {
                 document.getElementById("fetchID").click();
             }
         });
@@ -271,13 +187,8 @@
             // Create the URL with the email parameter
             const url = `${scriptURL}?email=${encodeURIComponent(email)}`;
             
-            // Set request timeout
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10-second timeout
-            
-            fetch(url, { signal: controller.signal })
+            fetch(url)
                 .then(response => {
-                    clearTimeout(timeoutId);
                     if (!response.ok) {
                         throw new Error("Network response was not ok");
                     }
@@ -293,72 +204,29 @@
                             resultDiv.innerHTML = "<p class='error'>Something went wrong.<br>Please try again.</p>";
                         } else {
                             let idsHtml = "";
-                            // Limit the number of displayed IDs for security
-                            const displayResults = result.slice(0, 5);
-                            
-                            displayResults.forEach(id => {
-                                // Additional sanitization for displayed content
-                                const safeId = document.createTextNode(id).textContent;
-                                idsHtml += `<div class="highlight-id">${safeId}</div>`;
+                            result.forEach(id => {
+                                idsHtml += `<div class="highlight-id">${id}</div>`;
                             });
                             
                             resultDiv.innerHTML = `
-                                <p class='success'>Here ${displayResults.length > 1 ? 'are' : 'is'} your Explorer ID${displayResults.length > 1 ? 's' : ''}:</p>
+                                <p class='success'>Here ${result.length > 1 ? 'are' : 'is'} your Explorer ID${result.length > 1 ? 's' : ''}:</p>
                                 ${idsHtml}
                             `;
-                            
-                            if (result.length > 5) {
-                                resultDiv.innerHTML += `<p class="instruction">Showing ${displayResults.length} of ${result.length} results.</p>`;
-                            }
                         }
                     } catch (e) {
-                        // If JSON parsing fails, show the error
+                        // If JSON parsing fails, show the raw response
                         resultDiv.innerHTML = "<p class='error'>Error getting your ID.<br>Please try again later.</p>";
-                        console.error("Error parsing response:", e);
                     }
                 })
                 .catch(error => {
-                    if (error.name === 'AbortError') {
-                        resultDiv.innerHTML = "<p class='error'>Request timed out.<br>Please try again later.</p>";
-                    } else {
-                        resultDiv.innerHTML = "<p class='error'>Connection problem.<br>Please try again later.</p>";
-                        console.error("Error:", error);
-                    }
+                    resultDiv.innerHTML = "<p class='error'>Connection problem.<br>Please try again later.</p>";
+                    console.error("Error:", error);
                 })
                 .finally(() => {
                     // Hide loading spinner
                     spinner.style.display = "none";
                 });
         }
-        
-        // Store session data to track user behavior
-        let sessionData = {
-            visitTime: new Date().toISOString(),
-            userAgent: navigator.userAgent,
-            requestCount: 0
-        };
-        
-        // Session storage for maintaining state between page reloads
-        if (sessionStorage.getItem('requestTimes')) {
-            try {
-                requestTimes = JSON.parse(sessionStorage.getItem('requestTimes'));
-                // Only keep recent requests
-                const now = Date.now();
-                requestTimes = requestTimes.filter(time => now - time < RATE_LIMIT_PERIOD);
-                sessionStorage.setItem('requestTimes', JSON.stringify(requestTimes));
-            } catch (e) {
-                // Reset if there's any issue
-                requestTimes = [];
-                sessionStorage.setItem('requestTimes', JSON.stringify(requestTimes));
-            }
-        } else {
-            sessionStorage.setItem('requestTimes', JSON.stringify(requestTimes));
-        }
-        
-        // Update session storage when window is closed or refreshed
-        window.addEventListener('beforeunload', function() {
-            sessionStorage.setItem('requestTimes', JSON.stringify(requestTimes));
-        });
     </script>
 </body>
 </html>
