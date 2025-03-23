@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Explore ID Finder</title>
+    <title>Explorer ID Finder</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -122,23 +122,35 @@
         .info-section a:hover {
             text-decoration: underline;
         }
+        
+        .info-section .section-divider {
+            margin: 15px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 15px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>Find Your Explore ID</h2>
+        <h2>Find Your Explorer ID</h2>
         
-        <p>Enter your email to find your Explore ID:</p>
+        <p>Enter your email to find your Explorer ID:</p>
         <input type="email" id="userEmail" placeholder="Enter your email">
-        <button id="fetchID">Find Explore ID</button>
+        <button id="fetchID">Find Explorer ID/button>
         
         <div class="loading" id="loadingSpinner"></div>
         <div id="result"></div>
         
         <div class="info-section" id="infoSection" style="display: none;">
             <p><strong>What's Next?</strong></p>
-            <p>You can use your Explore ID to sign up for specialization courses.</p>
+            <p>You can use your Explorer ID to sign up for specialization courses.</p>
             <p><a href="https://docs.google.com/spreadsheets/d/1InxXj9T4RM3ANPnNG3v9k69FgPiGthLmI1inIqFbAac/edit?gid=1114874844#gid=1114874844" target="_blank">Click here to access the specialization course sign-up sheet</a></p>
+            
+            <div class="section-divider"></div>
+            
+            <!-- <p><strong>Leadership Opportunities</strong></p>
+            <p>Ready to take on a leadership role? Sign up for leadership opportunities using your Explorer ID.</p>
+            <p><a href="https://docs.google.com/spreadsheets/d/1oAIxxk8neqM1B_dAMoYYThRPT0-dDKS9uJsUD8XKIRc/edit?gid=0#gid=0" target="_blank">Click here to view leadership opportunities</a></p> -->
         </div>
     </div>
 
@@ -153,7 +165,7 @@
                 return;
             }
             
-            findExploreID(email);
+            findExplorerID(email);
         });
         
         document.getElementById("userEmail").addEventListener("keypress", function(event) {
@@ -162,7 +174,7 @@
             }
         });
         
-        function findExploreID(email) {
+        function findExplorerID(email) {
             const resultDiv = document.getElementById("result");
             const spinner = document.getElementById("loadingSpinner");
             const infoSection = document.getElementById("infoSection");
@@ -187,7 +199,7 @@
                         const result = JSON.parse(data);
                         
                         if (result[0] === "not_found") {
-                            resultDiv.innerHTML = "<p class='error'>No Explore ID found for this email.</p>";
+                            resultDiv.innerHTML = "<p class='error'>No Explorer ID found for this email. Please use the email address you used when signing up for Nobel.</p>";
                             infoSection.style.display = "none";
                         } else if (result[0] === "invalid_request") {
                             resultDiv.innerHTML = "<p class='error'>Invalid request. Please try again.</p>";
@@ -199,7 +211,7 @@
                             });
                             
                             resultDiv.innerHTML = `
-                                <p class='success'>Your Explore ID${result.length > 1 ? 's' : ''}:</p>
+                                <p class='success'>Your Explorer ID${result.length > 1 ? 's' : ''}:</p>
                                 ${idsHtml}
                             `;
                             
