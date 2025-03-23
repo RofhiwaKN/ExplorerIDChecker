@@ -199,7 +199,245 @@
                         const result = JSON.parse(data);
                         
                         if (result[0] === "not_found") {
-                            resultDiv.innerHTML = "<p class='error'>No Explorer ID found for this email. Please use the email address you used when signing up for Nobel.</p>";
+                            resultDiv.innerHTML = "<p class='error'> <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explorer ID Finder</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #2c5364, #203a43, #0f2027);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            font-size: 2rem;
+            color: #fff;
+        }
+
+        input, button {
+            margin: 10px 0;
+            padding: 12px;
+            width: 100%;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        input {
+            background: rgba(255, 255, 255, 0.8);
+            color: #333;
+        }
+
+        button {
+            background: #3a7bd5;
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        button:hover {
+            background: #2e5e9e;
+        }
+
+        #result {
+            margin-top: 20px;
+            min-height: 50px;
+            font-weight: bold;
+        }
+
+        .loading {
+            display: none;
+            margin: 10px auto;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 5px solid #d4af37;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .success {
+            color: #d4af37;
+            font-size: 1.2rem;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .error {
+            color: #ff6b6b;
+        }
+
+        .highlight-id {
+            font-size: 1.5rem;
+            padding: 10px 15px;
+            background: rgba(212, 175, 55, 0.2);
+            border-radius: 8px;
+            margin: 10px 0;
+            display: inline-block;
+        }
+
+        .info-section {
+            margin-top: 25px;
+            text-align: left;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            border-left: 4px solid #d4af37;
+        }
+
+        .info-section a {
+            color: #d4af37;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .info-section a:hover {
+            text-decoration: underline;
+        }
+        
+        .info-section .section-divider {
+            margin: 15px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Find Your Explorer ID</h2>
+        
+        <p>Enter your email to find your Explorer ID:</p>
+        <input type="email" id="userEmail" placeholder="Enter your email">
+        <button id="fetchID">Find Explorer ID</button>
+        
+        <div class="loading" id="loadingSpinner"></div>
+        <div id="result"></div>
+        
+        <div class="info-section" id="infoSection" style="display: none;">
+            <p><strong>What's Next?</strong></p>
+            <p>You can use your Explorer ID to sign up for specialization courses.</p>
+            <p><a href="https://docs.google.com/spreadsheets/d/1InxXj9T4RM3ANPnNG3v9k69FgPiGthLmI1inIqFbAac/edit?gid=1114874844#gid=1114874844" target="_blank">Click here to access the specialization course sign-up sheet</a></p>
+            
+            <div class="section-divider"></div>
+            
+            <!-- <p><strong>Leadership Opportunities</strong></p>
+            <p>Ready to take on a leadership role? Sign up for leadership opportunities using your Explorer ID.</p>
+            <p><a href="https://docs.google.com/spreadsheets/d/1oAIxxk8neqM1B_dAMoYYThRPT0-dDKS9uJsUD8XKIRc/edit?gid=0#gid=0" target="_blank">Click here to view leadership opportunities</a></p> -->
+        </div>
+    </div>
+
+    <script>
+        // Replace with your published Google Apps Script web app URL
+        const scriptURL = "https://script.google.com/macros/s/AKfycbwjoDoDPp402oQKIuPtJ_U1cn1YLTUhC4DYxdBuu88CsOxArsNaJ_QwdNIOQBqTZ00a/exec";
+        
+        document.getElementById("fetchID").addEventListener("click", function() {
+            const email = document.getElementById("userEmail").value.trim();
+            if (!email) {
+                alert("Please enter a valid email address");
+                return;
+            }
+            
+            findExplorerID(email);
+        });
+        
+        document.getElementById("userEmail").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                document.getElementById("fetchID").click();
+            }
+        });
+        
+        function findExplorerID(email) {
+            const resultDiv = document.getElementById("result");
+            const spinner = document.getElementById("loadingSpinner");
+            const infoSection = document.getElementById("infoSection");
+            
+            // Show loading spinner
+            spinner.style.display = "block";
+            resultDiv.innerHTML = "";
+            infoSection.style.display = "none";
+            
+            // Create the URL with the email parameter
+            const url = `${scriptURL}?email=${encodeURIComponent(email)}`;
+            
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Network response was not ok");
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    try {
+                        const result = JSON.parse(data);
+                        
+                        if (result[0] === "not_found") {
+                            resultDiv.innerHTML = "<p class='error'>No Explorer was found, please use the email address you used when signing up for Nobel.</p>";
+                            infoSection.style.display = "none";
+                        } else if (result[0] === "invalid_request") {
+                            resultDiv.innerHTML = "<p class='error'>Invalid request. Please try again.</p>";
+                            infoSection.style.display = "none";
+                        } else {
+                            let idsHtml = "";
+                            result.forEach(id => {
+                                idsHtml += `<div class="highlight-id">${id}</div>`;
+                            });
+                            
+                            resultDiv.innerHTML = `
+                                <p class='success'>Your Explorer ID${result.length > 1 ? 's' : ''}:</p>
+                                ${idsHtml}
+                            `;
+                            
+                            // Show the info section with the link
+                            infoSection.style.display = "block";
+                        }
+                    } catch (e) {
+                        // If JSON parsing fails, show the raw response
+                        resultDiv.innerHTML = "<p class='error'>Error processing response.</p><p>" + data + "</p>";
+                        infoSection.style.display = "none";
+                    }
+                })
+                .catch(error => {
+                    resultDiv.innerHTML = "<p class='error'>Error connecting to server. Please try again later.</p>";
+                    console.error("Error:", error);
+                    infoSection.style.display = "none";
+                })
+                .finally(() => {
+                    // Hide loading spinner
+                    spinner.style.display = "none";
+                });
+        }
+    </script>
+</body>
+</html>Please use the email address you used when signing up for Nobel.</p>";
                             infoSection.style.display = "none";
                         } else if (result[0] === "invalid_request") {
                             resultDiv.innerHTML = "<p class='error'>Invalid request. Please try again.</p>";
