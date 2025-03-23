@@ -245,7 +245,7 @@
             findExplorerID(email);
         });
         
-    function findExplorerID(email) {
+   function findExplorerID(email) {
   isProcessing = true;
   lastRequestTime = Date.now();
   elements.submitButton.disabled = true;
@@ -253,16 +253,26 @@
   elements.spinner.style.display = "block";
   elements.resultDiv.innerHTML = "";
   
+  console.log("Fetching data from:", `${config.scriptURL}?email=${encodeURIComponent(email)}`); 
+  
   fetch(`${config.scriptURL}?email=${encodeURIComponent(email)}`, {
     method: 'GET',
     headers: {
       'Accept': 'application/json'
     }
   })
-  .then(response => response.text())
+  .then(response => {
+    console.log("Response status:", response.status); 
+    if (!response.ok) {
+      throw new Error("Network response was not ok");
+    }
+    return response.text();
+  })
   .then(data => {
+    console.log("Raw response data:", data); 
     try {
       const result = JSON.parse(data);
+      console.log("Parsed response:", result); 
       
       if (Array.isArray(result)) {
         if (result[0] === "not_found") {
@@ -275,16 +285,17 @@
           displayIds(result);
         }
       } else {
+        console.error("Unexpected response format:", result);
         showError("Unexpected response. Please try again later.");
       }
     } catch (e) {
+      console.error("Error parsing JSON:", e); 
       showError("Error processing server response. Please try again later.");
-      console.error("Error parsing JSON:", e);
     }
   })
   .catch(error => {
-    showError("Connection problem. Please try again later.");
     console.error("Fetch error:", error);
+    showError("Connection problem. Please try again later.");
   })
   .finally(() => {
     isProcessing = false;
