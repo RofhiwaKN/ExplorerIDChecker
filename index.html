@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Explorer ID Lookup</title>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src https://script.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com https://fonts.googleapis.com; script-src 'self'">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -90,9 +91,9 @@
         }
 
         button:disabled {
-            background: #8a8a8a;
+            background: #8a4444;
             cursor: not-allowed;
-            transform: none;
+            opacity: 0.7;
         }
 
         #result {
@@ -149,17 +150,10 @@
             text-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
 
-        .invalid {
-            border: 2px solid #ff6b6b;
-        }
-
-        .validation-message {
-            color: #ff6b6b;
+        #cooldown {
             font-size: 0.9rem;
-            text-align: left;
-            margin-top: -10px;
-            margin-bottom: 10px;
-            display: none;
+            margin-top: 10px;
+            color: #ffb3b3;
         }
     </style>
 </head>
@@ -168,188 +162,203 @@
         <h3>Look Up Your Explorer ID</h3>
         <p class="instruction">Enter the email address you used when signing up for Nobel</p>
 
-        <form id="idLookupForm">
-            <input type="email" id="userEmail" placeholder="Email address" autofocus>
-            <div id="emailValidation" class="validation-message">Please enter a valid email address</div>
-            <button type="submit" id="fetchID">Search</button>
-        </form>
+        <input type="email" id="userEmail" placeholder="Your Nobel email address" autofocus>
+        <button id="fetchID">Search</button>
+        <div id="cooldown"></div>
         
         <div class="loading" id="loadingSpinner"></div>
         <div id="result"></div>
     </div>
 
     <script>
+       
+        const scriptURL = "https://script.google.com/macros/s/AKfycbwjoDoDPp402oQKIuPtJ_U1cn1YLTUhC4DYxdBuu88CsOxArsNaJ_QwdNIOQBqTZ00a/exec";
         
-        const config = {
-            scriptURL: "https://script.google.com/macros/s/AKfycbwjoDoDPp402oQKIuPtJ_U1cn1YLTUhC4DYxdBuu88CsOxArsNaJ_QwdNIOQBqTZ00a/exec",
-            minTimeBetweenRequests: 1000 
-        };
-
-      
-        const elements = {
-            form: document.getElementById("idLookupForm"),
-            email: document.getElementById("userEmail"),
-            emailValidation: document.getElementById("emailValidation"),
-            submitButton: document.getElementById("fetchID"),
-            resultDiv: document.getElementById("result"),
-            spinner: document.getElementById("loadingSpinner")
-        };
-
-        // Cache regex pattern
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-        // State management
-        let lastRequestTime = 0;
-        let isProcessing = false;
-
-        // Optimize email validation with cached regex
-        function isValidEmail(email) {
-            return emailRegex.test(email);
+   
+        const RATE_LIMIT = 4; 
+        const RATE_LIMIT_PERIOD = 60000; 
+        const COOLDOWN_TIME = 15000;
+        
+        let requestCount = 0;
+        let requestTimes = [];
+        let buttonCooldown = false;
+        
+        // Function to sanitize user input
+        function sanitizeInput(input) {
+            return input.replace(/[<>"'&]/g, '');
         }
-
-        // D
-        let validationTimeout;
-        elements.email.addEventListener("input", function() {
-            clearTimeout(validationTimeout);
+        
+        // Function to validate email format
+        function isValidEmail(email) {
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailPattern.test(email);
+        }
+        
+        document.getElementById("fetchID").addEventListener("click", function() {
+            const emailInput = document.getElementById("userEmail");
+            const email = emailInput.value.trim();
             
-            validationTimeout = setTimeout(() => {
-                const email = elements.email.value.trim();
-                
-                if (email && !isValidEmail(email)) {
-                    elements.email.classList.add("invalid");
-                    elements.emailValidation.style.display = "block";
-                } else {
-                    elements.email.classList.remove("invalid");
-                    elements.emailValidation.style.display = "none";
-                }
-                
-                elements.submitButton.disabled = !email || (email && !isValidEmail(email)) || isProcessing;
-            }, 200);
-        });
-
-        elements.form.addEventListener("submit", function(event) {
-            event.preventDefault();
-            
-            const email = elements.email.value.trim();
-            const now = Date.now();
-            
-            // Quick validation checks
-            if (!email || isProcessing || (now - lastRequestTime < config.minTimeBetweenRequests)) {
-                if (now - lastRequestTime < config.minTimeBetweenRequests) {
-                    showError("Please wait a moment before trying again.");
-                } else if (!email) {
-                    showError("Email is required.");
-                }
+            // Input validation
+            if (!email) {
+                alert("Please enter your Nobel email address");
                 return;
             }
             
             if (!isValidEmail(email)) {
-                elements.email.classList.add("invalid");
-                elements.emailValidation.style.display = "block";
+                alert("Please enter a valid email address");
                 return;
             }
             
-     
-            findExplorerID(email);
+            // Rate limiting check
+            const now = Date.now();
+            
+            // Remove request timestamps older than the rate limit period
+            requestTimes = requestTimes.filter(time => now - time < RATE_LIMIT_PERIOD);
+            
+            if (requestTimes.length >= RATE_LIMIT) {
+                const cooldownDiv = document.getElementById("cooldown");
+                cooldownDiv.textContent = `Too many requests. Please try again later.`;
+                return;
+            }
+            
+            if (buttonCooldown) {
+                return;
+            }
+            
+            // Add current request timestamp
+            requestTimes.push(now);
+            
+            // Apply button cooldown
+            const button = document.getElementById("fetchID");
+            button.disabled = true;
+            buttonCooldown = true;
+            
+            const cooldownDiv = document.getElementById("cooldown");
+            let remainingTime = COOLDOWN_TIME / 1000;
+            
+            cooldownDiv.textContent = `Please wait ${remainingTime} seconds before trying again`;
+            
+            const cooldownInterval = setInterval(() => {
+                remainingTime--;
+                if (remainingTime > 0) {
+                    cooldownDiv.textContent = `Please wait ${remainingTime} seconds before trying again`;
+                } else {
+                    clearInterval(cooldownInterval);
+                    cooldownDiv.textContent = "";
+                    button.disabled = false;
+                    buttonCooldown = false;
+                }
+            }, 1000);
+            
+            // Proceed with the request
+            findExplorerID(sanitizeInput(email));
         });
         
-     
+        document.getElementById("userEmail").addEventListener("keypress", function(event) {
+            if (event.key === "Enter" && !document.getElementById("fetchID").disabled) {
+                document.getElementById("fetchID").click();
+            }
+        });
+        
         function findExplorerID(email) {
-            // Update state
-            isProcessing = true;
-            lastRequestTime = Date.now();
-            elements.submitButton.disabled = true;
+            const resultDiv = document.getElementById("result");
+            const spinner = document.getElementById("loadingSpinner");
             
             // Show loading spinner
-            elements.spinner.style.display = "block";
-            elements.resultDiv.innerHTML = "";
+            spinner.style.display = "block";
+            resultDiv.innerHTML = "";
             
-        
-            fetch(`${config.scriptURL}?email=${encodeURIComponent(email)}`, {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json'
-                }
-            })
-            .then(response => response.text())
-            .then(data => {
-                try {
-                    const result = JSON.parse(data);
-                    
+            // Create the URL with the email parameter
+            const url = `${scriptURL}?email=${encodeURIComponent(email)}`;
             
-                    if (Array.isArray(result)) {
-                        if (result[0] === "not_found") {
-                            showError("No ID found for this email. Please use the email you registered with Nobel.");
-                        } else if (result[0] === "error" || result[0] === "invalid_request") {
-                            showError("Something went wrong. Please try again.");
-                        } else if (result[0] === "rate_limited") {
-                            showError("Too many requests. Please wait a moment before trying again.");
-                        } else {
-                            displayIds(result);
-                        }
-                    } 
-           
-                    else if (result.status) {
-                        if (result.status === "error") {
-                            showError(result.message || "An error occurred. Please try again later.");
-                        } else if (result.status === "success" && result.ids?.length > 0) {
-                            displayIds(result.ids);
-                        } else {
-                            showError("No ID found for this email. Please use the email you registered with Nobel.");
-                        }
-                    } 
-                    else {
-                        showError("Unexpected response. Please try again later.");
+            // Set request timeout
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10-second timeout
+            
+            fetch(url, { signal: controller.signal })
+                .then(response => {
+                    clearTimeout(timeoutId);
+                    if (!response.ok) {
+                        throw new Error("Network response was not ok");
                     }
-                } catch (e) {
-                    showError("Error processing server response. Please try again later.");
-                    console.error("Error parsing JSON:", e);
-                }
-            })
-            .catch(error => {
-                showError("Connection problem. Please try again later.");
-                console.error("Fetch error:", error);
-            })
-            .finally(() => {
-             
-                isProcessing = false;
-                elements.spinner.style.display = "none";
-                elements.submitButton.disabled = false;
-            });
+                    return response.text();
+                })
+                .then(data => {
+                    try {
+                        const result = JSON.parse(data);
+                        
+                        if (result[0] === "not_found") {
+                            resultDiv.innerHTML = "<p class='error'>No ID found for this email.<br>Please use the email you registered with Nobel.</p>";
+                        } else if (result[0] === "invalid_request") {
+                            resultDiv.innerHTML = "<p class='error'>Something went wrong.<br>Please try again.</p>";
+                        } else {
+                            let idsHtml = "";
+                            // Limit the number of displayed IDs for security
+                            const displayResults = result.slice(0, 5);
+                            
+                            displayResults.forEach(id => {
+                                // Additional sanitization for displayed content
+                                const safeId = document.createTextNode(id).textContent;
+                                idsHtml += `<div class="highlight-id">${safeId}</div>`;
+                            });
+                            
+                            resultDiv.innerHTML = `
+                                <p class='success'>Here ${displayResults.length > 1 ? 'are' : 'is'} your Explorer ID${displayResults.length > 1 ? 's' : ''}:</p>
+                                ${idsHtml}
+                            `;
+                            
+                            if (result.length > 5) {
+                                resultDiv.innerHTML += `<p class="instruction">Showing ${displayResults.length} of ${result.length} results.</p>`;
+                            }
+                        }
+                    } catch (e) {
+                        // If JSON parsing fails, show the error
+                        resultDiv.innerHTML = "<p class='error'>Error getting your ID.<br>Please try again later.</p>";
+                        console.error("Error parsing response:", e);
+                    }
+                })
+                .catch(error => {
+                    if (error.name === 'AbortError') {
+                        resultDiv.innerHTML = "<p class='error'>Request timed out.<br>Please try again later.</p>";
+                    } else {
+                        resultDiv.innerHTML = "<p class='error'>Connection problem.<br>Please try again later.</p>";
+                        console.error("Error:", error);
+                    }
+                })
+                .finally(() => {
+                    // Hide loading spinner
+                    spinner.style.display = "none";
+                });
         }
         
-
-        const sanitizerTemplate = document.createElement('template');
-        function sanitizeHtml(text) {
-            if (!text) return '';
-            sanitizerTemplate.innerHTML = '';
-            sanitizerTemplate.textContent = text;
-            return sanitizerTemplate.innerHTML;
+        // Store session data to track user behavior
+        let sessionData = {
+            visitTime: new Date().toISOString(),
+            userAgent: navigator.userAgent,
+            requestCount: 0
+        };
+        
+        // Session storage for maintaining state between page reloads
+        if (sessionStorage.getItem('requestTimes')) {
+            try {
+                requestTimes = JSON.parse(sessionStorage.getItem('requestTimes'));
+                // Only keep recent requests
+                const now = Date.now();
+                requestTimes = requestTimes.filter(time => now - time < RATE_LIMIT_PERIOD);
+                sessionStorage.setItem('requestTimes', JSON.stringify(requestTimes));
+            } catch (e) {
+                // Reset if there's any issue
+                requestTimes = [];
+                sessionStorage.setItem('requestTimes', JSON.stringify(requestTimes));
+            }
+        } else {
+            sessionStorage.setItem('requestTimes', JSON.stringify(requestTimes));
         }
-     
-        function showError(message) {
-            elements.resultDiv.innerHTML = `<p class='error'>${sanitizeHtml(message)}</p>`;
-        }
-       
-        function displayIds(ids) {
-            if (!ids || !ids.length) return;
-            
-            const fragment = document.createDocumentFragment();
-            const successMsg = document.createElement('p');
-            successMsg.className = 'success';
-            successMsg.textContent = `Here ${ids.length > 1 ? 'are' : 'is'} your Explorer ID${ids.length > 1 ? 's' : ''}:`;
-            fragment.appendChild(successMsg);
-            
-            ids.forEach(id => {
-                const idDiv = document.createElement('div');
-                idDiv.className = 'highlight-id';
-                idDiv.textContent = id;
-                fragment.appendChild(idDiv);
-            });
-            
-            elements.resultDiv.innerHTML = '';
-            elements.resultDiv.appendChild(fragment);
-        }
+        
+        // Update session storage when window is closed or refreshed
+        window.addEventListener('beforeunload', function() {
+            sessionStorage.setItem('requestTimes', JSON.stringify(requestTimes));
+        });
     </script>
 </body>
 </html>
