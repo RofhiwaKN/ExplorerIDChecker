@@ -6,111 +6,120 @@
     <title>Explorer ID Lookup</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #16a34a;
+            --primary-light: #22c55e;
+            --primary-dark: #15803d;
+            --success: #10b981;
+            --error: #ef4444;
+            --warning: #f59e0b;
+            --gray-light: #f3f4f6;
+            --gray-dark: #6b7280;
+            --text: #111827;
+            --text-light: #4b5563;
+        }
+
         body {
-            font-family: 'Open Sans', sans-serif;
-            background: linear-gradient(135deg, #f0f4f0, #e6f3e0, #f4f9e6);
-            color: #2c3e50;
+            font-family: 'Inter', sans-serif;
+            background-color: #f9fafb;
+            color: var(--text);
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
             padding: 20px;
             text-align: center;
+            line-height: 1.5;
         }
 
         .container {
-            background: rgba(255, 255, 255, 0.9);
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            max-width: 600px;
+            background: white;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            max-width: 500px;
             width: 100%;
-            border: 2px solid #d4edda;
             position: relative;
+            margin-bottom: 2rem;
         }
 
-        h3 {
-            margin-bottom: 25px;
-            font-size: 1.8rem;
-            color: #2c7a2c;
+        h1 {
+            margin-bottom: 1.5rem;
+            font-size: 1.75rem;
+            color: var(--primary-dark);
             font-weight: 700;
-            letter-spacing: 0.5px;
         }
 
         .instruction {
-            margin-bottom: 20px;
+            margin-bottom: 1.5rem;
+            color: var(--text-light);
             font-size: 1rem;
-            color: #495057;
-            opacity: 0.9;
         }
 
         input, button {
-            margin: 15px 0;
-            padding: 14px;
+            margin: 0.75rem 0;
+            padding: 0.875rem 1rem;
             width: 100%;
-            border: 2px solid #b8dab8;
             border-radius: 8px;
             font-size: 1rem;
             box-sizing: border-box;
-            font-family: 'Open Sans', sans-serif;
-            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s ease;
         }
 
         input {
-            background: #f8fff8;
-            color: #2c3e50;
+            background: white;
+            color: var(--text);
             font-weight: 500;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid #d1d5db;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
 
         input:focus {
             outline: none;
-            border-color: #28a745;
-            box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
         }
 
         button {
-            background: #28a745;
+            background: var(--primary);
             color: white;
             cursor: pointer;
             font-weight: 600;
-            letter-spacing: 0.5px;
             border: none;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-top: 1rem;
         }
 
         button:hover {
-            background: #2ecc71;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+            background: var(--primary-light);
         }
 
         button:active {
+            background: var(--primary-dark);
             transform: translateY(1px);
         }
 
         button:disabled {
-            background: #6c757d;
+            background: var(--gray-dark);
             cursor: not-allowed;
-            transform: none;
+            opacity: 0.7;
         }
 
         #result {
-            margin-top: 25px;
+            margin-top: 1.5rem;
             min-height: 50px;
-            font-weight: 500;
-            line-height: 1.5;
         }
 
         .loading {
             display: none;
-            margin: 15px auto;
-            border: 5px solid rgba(40, 167, 69, 0.3);
+            margin: 1rem auto;
+            border: 4px solid rgba(34, 197, 94, 0.2);
             border-radius: 50%;
-            border-top: 5px solid #ffc107;
+            border-top: 4px solid var(--primary);
             width: 30px;
             height: 30px;
             animation: spin 1s linear infinite;
@@ -121,254 +130,249 @@
             100% { transform: rotate(360deg); }
         }
 
-        .success {
-            color: #2c7a2c;
-            font-size: 1.2rem;
-            padding: 15px;
-            background: rgba(40, 167, 69, 0.1);
-            border: 1px solid #d4edda;
-            border-radius: 8px;
-            margin-bottom: 20px;
+        .success-message {
+            color: var(--success);
             font-weight: 600;
+            margin-bottom: 1rem;
         }
 
-        .error {
-            color: #721c24;
-            background: #f8d7da;
-            border: 1px solid #f5c6cb;
-            padding: 15px;
-            border-radius: 8px;
+        .error-message {
+            color: var(--error);
+            background: rgba(239, 68, 68, 0.05);
+            border-left: 3px solid var(--error);
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            text-align: left;
             font-weight: 500;
-            margin-bottom: 15px;
         }
 
-        .alternative-help {
-            background: #fff3cd;
-            border: 1px solid #ffeeba;
-            color: #856404;
-            padding: 15px;
+        .explorer-id {
+            font-size: 1.25rem;
+            padding: 1rem;
+            background: rgba(22, 163, 74, 0.05);
+            border: 1px solid rgba(22, 163, 74, 0.2);
             border-radius: 8px;
-            margin-top: 15px;
-            font-size: 0.9rem;
-        }
-
-        .highlight-id {
-            font-size: 1.5rem;
-            padding: 12px 20px;
-            background: rgba(255, 193, 7, 0.2);
-            border: 1px solid #ffc107;
-            border-radius: 8px;
-            margin: 15px 0;
-            display: inline-block;
-            letter-spacing: 1px;
-            font-weight: 700;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            margin: 0.5rem 0;
+            font-weight: 600;
+            color: var(--primary-dark);
         }
 
         .invalid {
-            border: 2px solid #dc3545;
+            border-color: var(--error) !important;
         }
 
         .validation-message {
-            color: #dc3545;
-            font-size: 0.9rem;
+            color: var(--error);
+            font-size: 0.875rem;
             text-align: left;
-            margin-top: -10px;
-            margin-bottom: 10px;
+            margin: -0.5rem 0 0.5rem 0;
             display: none;
+        }
+
+        footer {
+            margin-top: auto;
+            padding: 2rem 0;
+            width: 100%;
+            background-color: rgba(22, 163, 74, 0.05);
+            border-top: 1px solid rgba(22, 163, 74, 0.1);
+        }
+
+        .footer-content {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .logo {
+            color: var(--primary-dark);
+            font-weight: 700;
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .quote {
+            font-style: italic;
+            color: var(--text-light);
+            margin: 0.5rem 0;
+            position: relative;
+        }
+
+        .quote:before {
+            content: '"';
+            font-size: 2rem;
+            color: var(--primary-light);
+            position: absolute;
+            left: -15px;
+            top: -10px;
+        }
+
+        .copyright {
+            font-size: 0.75rem;
+            color: var(--gray-dark);
+            margin-top: 1rem;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h3>Look Up Your Explorer ID</h3>
-        <p class="instruction">Enter the email address you used when signing up for Nobel</p>
+        <h1>Look Up Your Explorer ID</h1>
+        <p class="instruction">Enter the email address you used when signing up for Nobel Navigators</p>
 
         <form id="idLookupForm">
-            <input type="email" id="userEmail" placeholder="Email address" autofocus>
+            <input type="email" id="userEmail" placeholder="Enter your email address" autofocus>
             <div id="emailValidation" class="validation-message">Please enter a valid email address</div>
-            <button type="submit" id="fetchID">Search</button>
+            <button type="submit" id="fetchID">Find My ID</button>
         </form>
         
         <div class="loading" id="loadingSpinner"></div>
         <div id="result"></div>
     </div>
 
+    <footer>
+        <div class="footer-content">
+            <div class="logo">Nobel Navigators</div>
+            <div class="quote">Empowering the next generation of digital professionals.</div>
+            <div class="copyright">Nobel Learning PBC.</div>
+        </div>
+    </footer>
+
     <script>
-       const config = {
-    scriptURL: "https://script.google.com/macros/s/AKfycbxPo0CiAtIITaLP4mdeIxJDb7PmCN-4JQkkwKsiDRfOE0DuqQk_lnf7B-pJkqZ8le3rXQ/exec",
-    minTimeBetweenRequests: 1000 
-};
+        const config = {
+            scriptURL: "https://script.google.com/macros/s/AKfycbxPo0CiAtIITaLP4mdeIxJDb7PmCN-4JQkkwKsiDRfOE0DuqQk_lnf7B-pJkqZ8le3rXQ/exec",
+            minTimeBetweenRequests: 1000 
+        };
 
-const elements = {
-    form: document.getElementById("idLookupForm"),
-    email: document.getElementById("userEmail"),
-    emailValidation: document.getElementById("emailValidation"),
-    submitButton: document.getElementById("fetchID"),
-    resultDiv: document.getElementById("result"),
-    spinner: document.getElementById("loadingSpinner")
-};
+        const elements = {
+            form: document.getElementById("idLookupForm"),
+            email: document.getElementById("userEmail"),
+            emailValidation: document.getElementById("emailValidation"),
+            submitButton: document.getElementById("fetchID"),
+            resultDiv: document.getElementById("result"),
+            spinner: document.getElementById("loadingSpinner")
+        };
 
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-let lastRequestTime = 0;
-let isProcessing = false;
+        let lastRequestTime = 0;
+        let isProcessing = false;
 
-function isValidEmail(email) {
-    return emailRegex.test(email);
-}
-
-let validationTimeout;
-elements.email.addEventListener("input", function() {
-    clearTimeout(validationTimeout);
-    
-    validationTimeout = setTimeout(() => {
-        const email = elements.email.value.trim();
-        
-        if (email && !isValidEmail(email)) {
-            elements.email.classList.add("invalid");
-            elements.emailValidation.style.display = "block";
-        } else {
-            elements.email.classList.remove("invalid");
-            elements.emailValidation.style.display = "none";
+        function isValidEmail(email) {
+            return emailRegex.test(email);
         }
-        
-        elements.submitButton.disabled = !email || (email && !isValidEmail(email)) || isProcessing;
-    }, 200);
-});
 
-elements.form.addEventListener("submit", function(event) {
-    event.preventDefault();
-    
-    const email = elements.email.value.trim();
-    const now = Date.now();
-    
-    if (!email || isProcessing || (now - lastRequestTime < config.minTimeBetweenRequests)) {
-        if (now - lastRequestTime < config.minTimeBetweenRequests) {
-            showError("Please wait a moment before trying again.");
-        } else if (!email) {
-            showError("Email is required.");
-        }
-        return;
-    }
-    
-    if (!isValidEmail(email)) {
-        elements.email.classList.add("invalid");
-        elements.emailValidation.style.display = "block";
-        return;
-    }
-    
-    findExplorerID(email);
-});
-
-function findExplorerID(email) {
-    isProcessing = true;
-    lastRequestTime = Date.now();
-    elements.submitButton.disabled = true;
-    
-    elements.spinner.style.display = "block";
-    elements.resultDiv.innerHTML = "";
-    
-    console.log("Fetching data from:", `${config.scriptURL}?email=${encodeURIComponent(email)}`); 
-    
-    fetch(`${config.scriptURL}?email=${encodeURIComponent(email)}`, {
-        method: 'GET',
-        headers: {
-            'Accept': 'application/json'
-        }
-    })
-    .then(response => {
-        console.log("Response status:", response.status); 
-        if (!response.ok) {
-            throw new Error("Network response was not ok");
-        }
-        return response.text();
-    })
-    .then(data => {
-        console.log("Raw response data:", data); 
-        try {
-            const result = JSON.parse(data);
-            console.log("Parsed response:", result); 
+        // Real-time email validation
+        elements.email.addEventListener("input", function() {
+            const email = elements.email.value.trim();
             
-            if (Array.isArray(result)) {
-                if (result[0] === "not_found") {
-                    showError("No ID found for this email. Please use the email you registered with Nobel.", true);
-                } else if (result[0] === "invalid_request") {
-                    showError("Something went wrong. Please try again.", true);
-                } else if (result[0] === "rate_limited") {
-                    showError("Too many requests. Please wait a moment before trying again.", true);
-                } else if (result[0] === "error") {
-                    showError("An error occurred while processing your request.", true);
-                } else {
-                    displayIds(result);
-                }
-            } else if (typeof result === 'object') {
-                // Handle object response format
-                if (result.status === "error") {
-                    showError(result.message || "An error occurred", true);
-                } else if (result.status === "success" && result.ids) {
-                    displayIds(result.ids);
-                } else {
-                    showError("Unexpected response format. Please try again later.", true);
-                }
+            if (email && !isValidEmail(email)) {
+                elements.email.classList.add("invalid");
+                elements.emailValidation.style.display = "block";
             } else {
-                console.error("Unexpected response format:", result);
-                showError("Unexpected response. Please try again later.", true);
+                elements.email.classList.remove("invalid");
+                elements.emailValidation.style.display = "none";
             }
-        } catch (e) {
-            console.error("Error parsing JSON:", e); 
-            showError("Error processing server response. Please try again later.", true);
+            
+            elements.submitButton.disabled = !email || (email && !isValidEmail(email)) || isProcessing;
+        });
+
+        elements.form.addEventListener("submit", function(event) {
+            event.preventDefault();
+            
+            const email = elements.email.value.trim();
+            const now = Date.now();
+            
+            if (!email) {
+                showError("Please enter your email address");
+                return;
+            }
+            
+            if (!isValidEmail(email)) {
+                elements.email.classList.add("invalid");
+                elements.emailValidation.style.display = "block";
+                return;
+            }
+            
+            if (isProcessing || (now - lastRequestTime < config.minTimeBetweenRequests)) {
+                showError("Please wait a moment before trying again");
+                return;
+            }
+            
+            findExplorerID(email);
+        });
+
+        function findExplorerID(email) {
+            isProcessing = true;
+            lastRequestTime = Date.now();
+            elements.submitButton.disabled = true;
+            
+            elements.spinner.style.display = "block";
+            elements.resultDiv.innerHTML = "";
+            
+            fetch(`${config.scriptURL}?email=${encodeURIComponent(email)}`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Network response was not ok");
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.status === "error") {
+                    showError(data.message || "No Explorer ID found for this email. Please use the email you registered with Nobel Navigators.");
+                } else if (data.ids && data.ids.length > 0) {
+                    displayIds(data.ids);
+                } else {
+                    showError("No Explorer ID found for this email. Please use the email you registered with Nobel Navigators.");
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                showError("Unable to connect to the server. Please try again later.");
+            })
+            .finally(() => {
+                isProcessing = false;
+                elements.spinner.style.display = "none";
+                elements.submitButton.disabled = false;
+            });
         }
-    })
-    .catch(error => {
-        console.error("Fetch error:", error);
-        showError("Connection problem. Please try again later.", true);
-    })
-    .finally(() => {
-        isProcessing = false;
-        elements.spinner.style.display = "none";
-        elements.submitButton.disabled = false;
-    });
-}
 
-const sanitizerTemplate = document.createElement('template');
-function sanitizeHtml(text) {
-    if (!text) return '';
-    sanitizerTemplate.innerHTML = '';
-    sanitizerTemplate.textContent = text;
-    return sanitizerTemplate.innerHTML;
-}
+        function showError(message) {
+            elements.resultDiv.innerHTML = `
+                <div class="error-message">
+                    ${sanitizeHtml(message)}
+                </div>
+            `;
+        }
 
-function showError(message, showAlternative = false) {
-    const errorHtml = `<p class='error'>${sanitizeHtml(message)}</p>`;
-    const alternativeHtml = showAlternative 
-        ? `<div class='alternative-help'>
-            Can't find your ID? Contact support at support@nobel.org or call our help desk at +1 (800) NOBEL-ID.
-           </div>` 
-        : '';
-    
-    elements.resultDiv.innerHTML = errorHtml + alternativeHtml;
-}
+        function displayIds(ids) {
+            const fragment = document.createDocumentFragment();
+            
+            const successMsg = document.createElement('div');
+            successMsg.className = 'success-message';
+            successMsg.textContent = `Found ${ids.length > 1 ? `${ids.length} IDs` : '1 ID'} for your account:`;
+            fragment.appendChild(successMsg);
+            
+            ids.forEach(id => {
+                const idDiv = document.createElement('div');
+                idDiv.className = 'explorer-id';
+                idDiv.textContent = id;
+                fragment.appendChild(idDiv);
+            });
+            
+            elements.resultDiv.innerHTML = '';
+            elements.resultDiv.appendChild(fragment);
+        }
 
-function displayIds(ids) {
-    if (!ids || !ids.length) return;
-    
-    const fragment = document.createDocumentFragment();
-    const successMsg = document.createElement('p');
-    successMsg.className = 'success';
-    successMsg.textContent = `Here ${ids.length > 1 ? 'are' : 'is'} your Explorer ID${ids.length > 1 ? 's' : ''}:`;
-    fragment.appendChild(successMsg);
-    
-    ids.forEach(id => {
-        const idDiv = document.createElement('div');
-        idDiv.className = 'highlight-id';
-        idDiv.textContent = id;
-        fragment.appendChild(idDiv);
-    });
-    
-    elements.resultDiv.innerHTML = '';
-    elements.resultDiv.appendChild(fragment);
-}
+        function sanitizeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
     </script>
 </body>
 </html>
