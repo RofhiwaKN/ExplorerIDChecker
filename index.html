@@ -10,7 +10,177 @@
       href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="ExplorerId.css" />
+    <style>
+      body {
+          font-family: 'Open Sans', sans-serif;
+          background: linear-gradient(135deg, #f0f4f0, #e6f3e0, #f4f9e6);
+          color: #2c3e50;
+          display: flex;
+
+          justify-content: center;
+          align-items: center;
+          height: 100vh;
+          margin: 0;
+          padding: 20px;
+          text-align: center;
+      }
+
+      .container {
+          background: rgba(255, 255, 255, 0.9);
+          padding: 40px;
+          border-radius: 15px;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+          max-width: 600px;
+          width: 100%;
+          border: 2px solid #d4edda;
+      }
+
+      h3 {
+          margin-bottom: 25px;
+          font-size: 1.8rem;
+          color: #2c7a2c;
+          font-weight: 700;
+          letter-spacing: 0.5px;
+      }
+
+      .instruction {
+          margin-bottom: 20px;
+          font-size: 1rem;
+          color: #495057;
+          opacity: 0.9;
+      }
+
+      input, button {
+          margin: 15px 0;
+          padding: 14px;
+          width: 100%;
+          border: 2px solid #b8dab8;
+          border-radius: 8px;
+          font-size: 1rem;
+          box-sizing: border-box;
+          font-family: 'Open Sans', sans-serif;
+          transition: all 0.3s ease;
+      }
+
+      input {
+          background: #f8fff8;
+          color: #2c3e50;
+          font-weight: 500;
+          box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+      }
+
+      input:focus {
+          outline: none;
+          border-color: #28a745;
+          box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2);
+      }
+
+      button {
+          background: #28a745;
+          color: white;
+          cursor: pointer;
+          font-weight: 600;
+          letter-spacing: 0.5px;
+          border: none;
+          box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      }
+
+      button:hover {
+          background: #2ecc71;
+          transform: translateY(-2px);
+          box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+      }
+
+      button:active {
+          transform: translateY(1px);
+      }
+
+      button:disabled {
+          background: #6c757d;
+          cursor: not-allowed;
+          transform: none;
+      }
+
+      #result {
+          margin-top: 25px;
+          min-height: 50px;
+          font-weight: 500;
+          line-height: 1.5;
+      }
+
+      .loading {
+          display: none;
+          margin: 15px auto;
+          border: 5px solid rgba(40, 167, 69, 0.3);
+          border-radius: 50%;
+          border-top: 5px solid #ffc107;
+          width: 30px;
+          height: 30px;
+          animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+      }
+
+      .success {
+          color: #2c7a2c;
+          font-size: 1.2rem;
+          padding: 15px;
+          background: rgba(40, 167, 69, 0.1);
+          border: 1px solid #d4edda;
+          border-radius: 8px;
+          margin-bottom: 20px;
+          font-weight: 600;
+      }
+
+      .error {
+          color: #721c24;
+          background: #f8d7da;
+          border: 1px solid #f5c6cb;
+          padding: 15px;
+          border-radius: 8px;
+          font-weight: 500;
+          margin-bottom: 15px;
+      }
+
+      .alternative-help {
+          color: #721c24;
+          background: #f8d7da;
+          border: 1px solid #f5c6cb;
+          padding: 15px;
+          border-radius: 8px;
+          font-weight: 500;
+          margin-bottom: 15px;
+      }
+
+      .highlight-id {
+          font-size: 1.5rem;
+          padding: 12px 20px;
+          background: rgba(255, 193, 7, 0.2);
+          border: 1px solid #ffc107;
+          border-radius: 8px;
+          margin: 15px 0;
+          display: inline-block;
+          letter-spacing: 1px;
+          font-weight: 700;
+          box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      }
+
+      .invalid {
+          border: 2px solid #dc3545;
+      }
+
+      .validation-message {
+          color: #dc3545;
+          font-size: 0.9rem;
+          text-align: left;
+          margin-top: -10px;
+          margin-bottom: 10px;
+          display: none;
+      }
+    </style>
   </head>
   <body>
     <div class="container">
@@ -24,18 +194,219 @@
           type="email"
           id="userEmail"
           placeholder="Email address"
-          autocomplete="email"
           autofocus
         />
         <div id="emailValidation" class="validation-message">
           Please enter a valid email address
         </div>
-        <button type="submit" id="fetchID" disabled>Search</button>
+        <button type="submit" id="fetchID">Search</button>
       </form>
 
       <div class="loading" id="loadingSpinner"></div>
       <div id="result"></div>
     </div>
-    <script src="ExplorerId.js"></script>
+
+    <script>
+      const config = {
+        scriptURL:
+          "https://script.google.com/macros/s/AKfycbxPo0CiAtIITaLP4mdeIxJDb7PmCN-4JQkkwKsiDRfOE0DuqQk_lnf7B-pJkqZ8le3rXQ/exec",
+        minTimeBetweenRequests: 1000,
+      };
+
+      const elements = {
+        form: document.getElementById("idLookupForm"),
+        email: document.getElementById("userEmail"),
+        emailValidation: document.getElementById("emailValidation"),
+        submitButton: document.getElementById("fetchID"),
+        resultDiv: document.getElementById("result"),
+        spinner: document.getElementById("loadingSpinner"),
+      };
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      let lastRequestTime = 0;
+      let isProcessing = false;
+
+      function isValidEmail(email) {
+        return emailRegex.test(email);
+      }
+
+      let validationTimeout;
+      elements.email.addEventListener("input", function () {
+        clearTimeout(validationTimeout);
+
+        validationTimeout = setTimeout(() => {
+          const email = elements.email.value.trim();
+
+          if (email && !isValidEmail(email)) {
+            elements.email.classList.add("invalid");
+            elements.emailValidation.style.display = "block";
+          } else {
+            elements.email.classList.remove("invalid");
+            elements.emailValidation.style.display = "none";
+          }
+
+          elements.submitButton.disabled =
+            !email || (email && !isValidEmail(email)) || isProcessing;
+        }, 200);
+      });
+
+      elements.form.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        const email = elements.email.value.trim();
+        const now = Date.now();
+
+        if (
+          !email ||
+          isProcessing ||
+          now - lastRequestTime < config.minTimeBetweenRequests
+        ) {
+          if (now - lastRequestTime < config.minTimeBetweenRequests) {
+            showError("Please wait a moment before trying again.");
+          } else if (!email) {
+            showError("Email is required.");
+          }
+          return;
+        }
+
+        if (!isValidEmail(email)) {
+          elements.email.classList.add("invalid");
+          elements.emailValidation.style.display = "block";
+          return;
+        }
+
+        findExplorerID(email);
+      });
+
+      function findExplorerID(email) {
+        isProcessing = true;
+        lastRequestTime = Date.now();
+        elements.submitButton.disabled = true;
+
+        elements.spinner.style.display = "block";
+        elements.resultDiv.innerHTML = "";
+
+        console.log(
+          "Fetching data from:",
+          `${config.scriptURL}?email=${encodeURIComponent(email)}`
+        );
+
+        fetch(`${config.scriptURL}?email=${encodeURIComponent(email)}`, {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+          },
+        })
+          .then((response) => {
+            console.log("Response status:", response.status);
+            if (!response.ok) {
+              throw new Error("Network response was not ok");
+            }
+            return response.text();
+          })
+          .then((data) => {
+            console.log("Raw response data:", data);
+            try {
+              const result = JSON.parse(data);
+              console.log("Parsed response:", result);
+
+              if (Array.isArray(result)) {
+                if (result[0] === "not_found") {
+                  showError(
+                    "No ID found for this email. Please use the email you registered with Nobel.",
+                    true
+                  );
+                } else if (result[0] === "invalid_request") {
+                  showError("Something went wrong. Please try again.", true);
+                } else if (result[0] === "rate_limited") {
+                  showError(
+                    "Too many requests. Please wait a moment before trying again.",
+                    true
+                  );
+                } else if (result[0] === "error") {
+                  showError(
+                    "An error occurred while processing your request.",
+                    true
+                  );
+                } else {
+                  displayIds(result);
+                }
+              } else if (typeof result === "object") {
+                // Handle object response format
+                if (result.status === "error") {
+                  showError(result.message || "An error occurred", true);
+                } else if (result.status === "success" && result.ids) {
+                  displayIds(result.ids);
+                } else {
+                  showError(
+                    "Unexpected response format. Please try again later.",
+                    true
+                  );
+                }
+              } else {
+                console.error("Unexpected response format:", result);
+                showError("Unexpected response. Please try again later.", true);
+              }
+            } catch (e) {
+              console.error("Error parsing JSON:", e);
+              showError(
+                "Error processing server response. Please try again later.",
+                true
+              );
+            }
+          })
+          .catch((error) => {
+            console.error("Fetch error:", error);
+            showError("Connection problem. Please try again later.", true);
+          })
+          .finally(() => {
+            isProcessing = false;
+            elements.spinner.style.display = "none";
+            elements.submitButton.disabled = false;
+          });
+      }
+
+      const sanitizerTemplate = document.createElement("template");
+      function sanitizeHtml(text) {
+        if (!text) return "";
+        sanitizerTemplate.innerHTML = "";
+        sanitizerTemplate.textContent = text;
+        return sanitizerTemplate.innerHTML;
+      }
+
+      function showError(message, showAlternative = false) {
+        const errorHtml = `<p class='error'>${sanitizeHtml(message)}</p>`;
+        const alternativeHtml = showAlternative
+          ? `<div class='alternative-help'>
+          No ID found for this email. Please use the email you registered with Nobel.
+           </div>`
+          : "";
+
+        elements.resultDiv.innerHTML = errorHtml + alternativeHtml;
+      }
+
+      function displayIds(ids) {
+        if (!ids || !ids.length) return;
+
+        const fragment = document.createDocumentFragment();
+        const successMsg = document.createElement("p");
+        successMsg.className = "success";
+        successMsg.textContent = `Here ${
+          ids.length > 1 ? "are" : "is"
+        } your Explorer ID${ids.length > 1 ? "s" : ""}:`;
+        fragment.appendChild(successMsg);
+
+        ids.forEach((id) => {
+          const idDiv = document.createElement("div");
+          idDiv.className = "highlight-id";
+          idDiv.textContent = id;
+          fragment.appendChild(idDiv);
+        });
+
+        elements.resultDiv.innerHTML = "";
+        elements.resultDiv.appendChild(fragment);
+      }
+    </script>
   </body>
 </html>
