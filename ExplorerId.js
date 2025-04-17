@@ -4,7 +4,7 @@ const config = {
   scriptURL:
     "https://script.google.com/macros/s/AKfycby_kRlp12-OMQVx8TbdA29CCBqW_rDahCWplQDVNVCVi_vkgHLUPrBYE3V02KIfNco3/exec",
   minTimeBetweenRequests: 1000,
-  dashboardURL: "dashboard.html", // Add this line for the dashboard URL
+  dashboardURL: "./pathway-chacker/pathwayChecker.html",
 };
 
 const elements = {
@@ -165,7 +165,7 @@ function showError(message, showAlternative = false) {
      </div>`
     : "";
 
-  elements.resultDiv.innerHTML = errorHtml + alternativeHtml;
+  elements.resultDiv.innerHTML = alternativeHtml;
 }
 
 function displayIds(ids) {
@@ -179,22 +179,42 @@ function displayIds(ids) {
   } your Explorer ID${ids.length > 1 ? "s" : ""}:`;
   fragment.appendChild(successMsg);
 
+  const clickHint = document.createElement("p");
+  clickHint.className = "click-hint";
+  clickHint.textContent = "Click on your ID to view your dashboard →";
+  fragment.appendChild(clickHint);
+
   ids.forEach((id) => {
+    const idContainer = document.createElement("div");
+    idContainer.className = "id-container";
+
     const idDiv = document.createElement("div");
-    idDiv.className = "highlight-id clickable-id"; // Added clickable-id class
+    idDiv.className = "highlight-id clickable-id";
     idDiv.textContent = id;
-    idDiv.dataset.id = id; // Store the ID as a data attribute
-    fragment.appendChild(idDiv);
+    idDiv.dataset.id = id;
+
+    const arrowIcon = document.createElement("span");
+    arrowIcon.className = "arrow-icon";
+    arrowIcon.innerHTML = "&rarr;";
+
+    idContainer.appendChild(idDiv);
+    idContainer.appendChild(arrowIcon);
+    fragment.appendChild(idContainer);
   });
 
   elements.resultDiv.innerHTML = "";
   elements.resultDiv.appendChild(fragment);
 
+  document.querySelectorAll(".clickable-id").forEach((element) => {
+    element.addEventListener("click", function () {
+      const explorerId = this.dataset.id;
 
- document.querySelectorAll(".clickable-id").forEach((element) => {
-   element.addEventListener("click", function () {
-     const explorerId = this.dataset.id;
-     window.location.href = `/#${encodeURIComponent(explorerId)}`;
-   });
- });
+      this.classList.add("clicked");
+
+      window.location.href = `${config.dashboardURL}#${encodeURIComponent(
+        explorerId
+      )}`;
+      elements.spinner.style.display = "block";
+    });
+  });
 }
