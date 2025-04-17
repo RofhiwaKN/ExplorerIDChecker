@@ -2,8 +2,9 @@
 
 const config = {
   scriptURL:
-    "https://script.google.com/macros/s/AKfycbxPo0CiAtIITaLP4mdeIxJDb7PmCN-4JQkkwKsiDRfOE0DuqQk_lnf7B-pJkqZ8le3rXQ/exec",
+    "https://script.google.com/macros/s/AKfycby_kRlp12-OMQVx8TbdA29CCBqW_rDahCWplQDVNVCVi_vkgHLUPrBYE3V02KIfNco3/exec",
   minTimeBetweenRequests: 1000,
+  dashboardURL: "dashboard.html", // Add this line for the dashboard URL
 };
 
 const elements = {
@@ -80,11 +81,6 @@ function findExplorerID(email) {
   elements.spinner.style.display = "block";
   elements.resultDiv.innerHTML = "";
 
-  console.log(
-    "Fetching data from:",
-    `${config.scriptURL}?email=${encodeURIComponent(email)}`
-  );
-
   fetch(`${config.scriptURL}?email=${encodeURIComponent(email)}`, {
     method: "GET",
     headers: {
@@ -92,17 +88,14 @@ function findExplorerID(email) {
     },
   })
     .then((response) => {
-      console.log("Response status:", response.status);
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }
       return response.text();
     })
     .then((data) => {
-      console.log("Raw response data:", data);
       try {
         const result = JSON.parse(data);
-        console.log("Parsed response:", result);
 
         if (Array.isArray(result)) {
           if (result[0] === "not_found") {
@@ -188,11 +181,20 @@ function displayIds(ids) {
 
   ids.forEach((id) => {
     const idDiv = document.createElement("div");
-    idDiv.className = "highlight-id";
+    idDiv.className = "highlight-id clickable-id"; // Added clickable-id class
     idDiv.textContent = id;
+    idDiv.dataset.id = id; // Store the ID as a data attribute
     fragment.appendChild(idDiv);
   });
 
   elements.resultDiv.innerHTML = "";
   elements.resultDiv.appendChild(fragment);
+
+
+ document.querySelectorAll(".clickable-id").forEach((element) => {
+   element.addEventListener("click", function () {
+     const explorerId = this.dataset.id;
+     window.location.href = `/#${encodeURIComponent(explorerId)}`;
+   });
+ });
 }
