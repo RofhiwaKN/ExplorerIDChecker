@@ -12,6 +12,7 @@ const elements = {
   email: document.getElementById("userEmail"),
   emailValidation: document.getElementById("emailValidation"),
   submitButton: document.getElementById("fetchID"),
+
   resultDiv: document.getElementById("result"),
   spinner: document.getElementById("loadingSpinner"),
 };
