@@ -166,7 +166,7 @@ function showError(message, showAlternative = false) {
        </div>`
     : "";
    elements.searchSection.classList.remove("hidden");
-  elements.resultDiv.innerHTML = errorHtml + alternativeHtml;
+  elements.resultDiv.innerHTML =alternativeHtml;
  
 }
 
