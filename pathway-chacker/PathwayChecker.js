@@ -1,4 +1,3 @@
-// Optimized JavaScript Client
 class ExplorerDashboard {
   constructor() {
     this.SCRIPT_URL = "https://script.google.com/macros/s/AKfycbygOp9dIBus92vfmgX-ucYXlhRPhLaUcBGLTfZJrZDvK4OtWwAI0jnuBEGTzbpzGukvOw/exec";
