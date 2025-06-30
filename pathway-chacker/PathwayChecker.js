@@ -1,6 +1,6 @@
 class ExplorerDashboard {
   constructor() {
-    this.SCRIPT_URL = "https://script.google.com/macros/s/AKfycbygOp9dIBus92vfmgX-ucYXlhRPhLaUcBGLTfZJrZDvK4OtWwAI0jnuBEGTzbpzGukvOw/exec";
+    this.SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_DxD20Exi62uqA1RiYRrT53rtaUatb_v3t2sAq5FeUlsoyHjoZgrpLgh9n63R3b_1SQ/exec";
     this.cache = new Map();
     this.cacheTimeout = 5 * 60 * 1000; // 5 minutes
     this.initializeElements();
