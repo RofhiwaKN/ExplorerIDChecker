@@ -4,7 +4,6 @@ const config = {
   scriptURL:
     "https://script.google.com/macros/s/AKfycby_kRlp12-OMQVx8TbdA29CCBqW_rDahCWplQDVNVCVi_vkgHLUPrBYE3V02KIfNco3/exec",
   minTimeBetweenRequests: 1000,
-  dashboardURL: "./pathway-chacker/pathwayChecker.html",
 };
 
 const elements = {
@@ -176,6 +175,7 @@ function displayIds(ids) {
   const resultCard = document.createElement("div");
   resultCard.className = "id-result-card";
   elements.searchSection.classList.add("hidden");
+  
   if (ids.length === 1) {
     // For single ID, display it directly in the success message
     const successMsg = document.createElement("p");
@@ -183,35 +183,15 @@ function displayIds(ids) {
     successMsg.innerHTML = `Your Explorer ID: <span class="id-highlight">${ids[0]}</span>`;
     resultCard.appendChild(successMsg);
 
-    const idActions = document.createElement("div");
-    idActions.className = "id-actions";
-
-    // Smaller dashboard button
-    const dashboardButton = document.createElement("button");
-    dashboardButton.className = "dashboard-button";
-    dashboardButton.textContent = "Go to Dashboard";
-    dashboardButton.dataset.id = ids[0];
-    dashboardButton.addEventListener("click", function () {
-      const explorerId = this.dataset.id;
-      // Redirect without showing the spinner
-      window.location.href = `${config.dashboardURL}#${encodeURIComponent(
-        explorerId
-      )}`;
-    });
     // Add back button
-  const backButton = document.createElement("button");
-  backButton.className = "back-button";
-  backButton.textContent = "Back to Search";
-  backButton.addEventListener("click", function() {
-    elements.searchSection.classList.remove("hidden");
-    elements.resultDiv.innerHTML = "";
-  });
-  
-  // Add it to your result card
- 
-
-    idActions.appendChild(dashboardButton);
-    resultCard.appendChild(idActions);
+    const backButton = document.createElement("button");
+    backButton.className = "back-button";
+    backButton.textContent = "Back to Search";
+    backButton.addEventListener("click", function() {
+      elements.searchSection.classList.remove("hidden");
+      elements.resultDiv.innerHTML = "";
+    });
+    
     resultCard.appendChild(backButton);
   } else {
     // For multiple IDs, keep the selection interface
@@ -238,38 +218,25 @@ function displayIds(ids) {
       resultCard.appendChild(idContainer);
     });
 
-    const idActions = document.createElement("div");
-    idActions.className = "id-actions";
-
-    // Multiple ID case dashboard button
-    const dashboardButton = document.createElement("button");
-    dashboardButton.className = "dashboard-button";
-    dashboardButton.textContent = "Go to Dashboard";
-    dashboardButton.dataset.id = ids[0]; // Use the first ID by default
-    dashboardButton.addEventListener("click", function () {
-      const explorerId = this.dataset.id;
-      // Redirect without showing the spinner
-      window.location.href = `${config.dashboardURL}#${encodeURIComponent(
-        explorerId
-      )}`;
+    // Add back button for multiple IDs case
+    const backButton = document.createElement("button");
+    backButton.className = "back-button";
+    backButton.textContent = "Back to Search";
+    backButton.addEventListener("click", function() {
+      elements.searchSection.classList.remove("hidden");
+      elements.resultDiv.innerHTML = "";
     });
-
-    idActions.appendChild(dashboardButton);
-    resultCard.appendChild(idActions);
+    
+    resultCard.appendChild(backButton);
   }
 
   elements.resultDiv.innerHTML = "";
   elements.resultDiv.appendChild(resultCard);
 
-
   document.querySelectorAll(".clickable-id").forEach((element) => {
     element.addEventListener("click", function () {
       const explorerId = this.dataset.id;
 
-  
-      document.querySelector(".dashboard-button").dataset.id = explorerId;
-
-  
       document.querySelectorAll(".clickable-id").forEach((el) => {
         el.classList.remove("clicked");
       });
