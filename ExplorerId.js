@@ -157,6 +157,66 @@ function sanitizeHtml(text) {
   return sanitizerTemplate.innerHTML;
 }
 
+function copyToClipboard(text, buttonElement) {
+  navigator.clipboard.writeText(text).then(function() {
+    // Success feedback
+    const originalText = buttonElement.textContent || buttonElement.innerHTML;
+    const isButton = buttonElement.tagName === 'BUTTON';
+    
+    if (isButton) {
+      buttonElement.textContent = "Copied!";
+      buttonElement.classList.add("copied");
+    } else {
+      buttonElement.innerHTML = "✅";
+      buttonElement.title = "Copied!";
+    }
+    
+    setTimeout(() => {
+      if (isButton) {
+        buttonElement.textContent = originalText;
+        buttonElement.classList.remove("copied");
+      } else {
+        buttonElement.innerHTML = "📋";
+        buttonElement.title = "Copy to clipboard";
+      }
+    }, 2000);
+  }).catch(function(err) {
+    console.error('Failed to copy text: ', err);
+    // Fallback for older browsers
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      // Same success feedback as above
+      const originalText = buttonElement.textContent || buttonElement.innerHTML;
+      const isButton = buttonElement.tagName === 'BUTTON';
+      
+      if (isButton) {
+        buttonElement.textContent = "Copied!";
+        buttonElement.classList.add("copied");
+      } else {
+        buttonElement.innerHTML = "✅";
+        buttonElement.title = "Copied!";
+      }
+      
+      setTimeout(() => {
+        if (isButton) {
+          buttonElement.textContent = originalText;
+          buttonElement.classList.remove("copied");
+        } else {
+          buttonElement.innerHTML = "📋";
+          buttonElement.title = "Copy to clipboard";
+        }
+      }, 2000);
+    } catch (err) {
+      console.error('Fallback copy failed: ', err);
+    }
+    document.body.removeChild(textArea);
+  });
+}
+
 function showError(message, showAlternative = false) {
   const errorHtml = `<p class='error'>${sanitizeHtml(message)}</p>`;
   const alternativeHtml = showAlternative
@@ -183,6 +243,19 @@ function displayIds(ids) {
     successMsg.innerHTML = `Your Explorer ID: <span class="id-highlight">${ids[0]}</span>`;
     resultCard.appendChild(successMsg);
 
+    // Add copy button
+    const copyButton = document.createElement("button");
+    copyButton.className = "copy-button";
+    copyButton.textContent = "Copy ID";
+    copyButton.addEventListener("click", function() {
+      copyToClipboard(ids[0], this);
+    });
+    
+    // Add coming soon message
+    const comingSoonMsg = document.createElement("p");
+    comingSoonMsg.className = "coming-soon";
+    comingSoonMsg.textContent = "Course Dashboard coming soon!";
+    
     // Add back button
     const backButton = document.createElement("button");
     backButton.className = "back-button";
@@ -192,6 +265,8 @@ function displayIds(ids) {
       elements.resultDiv.innerHTML = "";
     });
     
+    resultCard.appendChild(copyButton);
+    resultCard.appendChild(comingSoonMsg);
     resultCard.appendChild(backButton);
   } else {
     // For multiple IDs, keep the selection interface
@@ -209,15 +284,25 @@ function displayIds(ids) {
       idDiv.textContent = id;
       idDiv.dataset.id = id;
 
-      const arrowIcon = document.createElement("span");
-      arrowIcon.className = "arrow-icon";
-      arrowIcon.innerHTML = "&rarr;";
+      const copyIcon = document.createElement("span");
+      copyIcon.className = "copy-icon";
+      copyIcon.innerHTML = "📋";
+      copyIcon.title = "Copy to clipboard";
+      copyIcon.addEventListener("click", function(e) {
+        e.stopPropagation();
+        copyToClipboard(id, this);
+      });
 
       idContainer.appendChild(idDiv);
-      idContainer.appendChild(arrowIcon);
+      idContainer.appendChild(copyIcon);
       resultCard.appendChild(idContainer);
     });
 
+    // Add coming soon message
+    const comingSoonMsg = document.createElement("p");
+    comingSoonMsg.className = "coming-soon";
+    comingSoonMsg.textContent = "Course Dashboard coming soon!";
+    
     // Add back button for multiple IDs case
     const backButton = document.createElement("button");
     backButton.className = "back-button";
@@ -227,6 +312,7 @@ function displayIds(ids) {
       elements.resultDiv.innerHTML = "";
     });
     
+    resultCard.appendChild(comingSoonMsg);
     resultCard.appendChild(backButton);
   }
 
