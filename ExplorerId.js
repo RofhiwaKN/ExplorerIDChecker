@@ -254,7 +254,7 @@ function displayIds(ids) {
     // Add coming soon message
     const comingSoonMsg = document.createElement("p");
     comingSoonMsg.className = "coming-soon";
-    comingSoonMsg.textContent = "Course Dashboard coming soon!";
+    comingSoonMsg.textContent = "The course dashboard is under maintenance and will be unavailable for a few weeks. Thanks for your patience!";
     
     // Add back button
     const backButton = document.createElement("button");
