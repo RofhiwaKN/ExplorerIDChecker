@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const errorTextElement = document.getElementById("error-text");
   const dashboardContainer = document.getElementById("dashboard-container");
   const SCRIPT_URL =
-    "https://script.google.com/macros/s/AKfycby-XcIsbEkAbv1ZckCgnyDBKVkXm33lEB16H9VLUYt5XzN0PMtkn_B5LfWJLGfbboUO/exec";
+    "https://script.google.com/macros/s/AKfycbyPyxkQrwEcj7RVOGTFN_Fy6cfSWr5kmmM3x362GL5XpZ2AQZkoYSkJ7Mmhsn8bJB3s/exec";
 
   function getExplorerIdFromHash() {
     try {
