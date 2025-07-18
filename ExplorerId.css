@@ -1,5 +1,5 @@
 body {
-  font-family: "Open Sans", sans-serif;
+  font-family: "Raleway", sans-serif;
   background: linear-gradient(135deg, #f0f4f0, #e6f3e0, #f4f9e6);
   color: #2c3e50;
   display: flex;
@@ -12,17 +12,22 @@ body {
 }
 
 .container {
-  background: rgba(255, 255, 255, 0.9);
-  padding: 40px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 35px;
   border-radius: 15px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  max-width: 600px;
+  max-width: 500px;
   width: 100%;
   border: 2px solid #d4edda;
+  transition: all 0.3s ease;
+}
+
+.header {
+  margin-bottom: 20px;
 }
 
 h3 {
-  margin-bottom: 25px;
+  margin-bottom: 12px;
   font-size: 1.8rem;
   color: #2c7a2c;
   font-weight: 700;
@@ -30,22 +35,25 @@ h3 {
 }
 
 .instruction {
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   font-size: 1rem;
   color: #495057;
   opacity: 0.9;
 }
 
+.input-group {
+  margin-bottom: 15px;
+  position: relative;
+}
+
 input,
 button {
-  margin: 15px 0;
-  padding: 14px;
+  padding: 16px;
   width: 100%;
-  border: 2px solid #b8dab8;
-  border-radius: 8px;
+  border-radius: 10px;
   font-size: 1rem;
   box-sizing: border-box;
-  font-family: "Open Sans", sans-serif;
+  font-family: "Raleway", sans-serif;
   transition: all 0.3s ease;
 }
 
@@ -53,13 +61,22 @@ input {
   background: #f8fff8;
   color: #2c3e50;
   font-weight: 500;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  border: 1px solid #b8dab8;
+  height: 45px;
+  padding: 10px 15px;
+  font-size: 1rem;
+  border-radius: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  font-family: "Raleway", sans-serif;
+  transition: all 0.3s ease;
 }
 
 input:focus {
   outline: none;
   border-color: #28a745;
-  box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2);
+  box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.15);
 }
 
 button {
@@ -67,15 +84,67 @@ button {
   color: white;
   cursor: pointer;
   font-weight: 600;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.6px;
   border: none;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  margin-top: 5px;
+  height: 42px;
+  padding: 0 15px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+}
+
+button .button-text {
+  margin-right: 14px;
+}
+
+.search-section {
+  transition: all 0.3s ease;
+}
+
+.search-section.hidden {
+  opacity: 0;
+  height: 0;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+.back-button {
+  background: #6c757d;
+  color: white;
+  padding: 8px 14px;
+  border-radius: 6px;
+  margin-top: 15px;
+  border: none;
+  cursor: pointer;
+  font-family: "Raleway", sans-serif;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.back-button:hover {
+  background: #5a6268;
+}
+button .button-icon {
+  font-size: 1.2rem;
+  opacity: 0.8;
+  transition: transform 0.3s ease;
 }
 
 button:hover {
   background: #2ecc71;
   transform: translateY(-2px);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+}
+
+button:hover .button-icon {
+  transform: translateX(5px);
+  opacity: 1;
 }
 
 button:active {
@@ -88,11 +157,16 @@ button:disabled {
   transform: none;
 }
 
+button:disabled .button-icon {
+  opacity: 0.4;
+  transform: none;
+}
+
 #result {
   margin-top: 25px;
   min-height: 50px;
   font-weight: 500;
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
 .loading {
@@ -117,13 +191,26 @@ button:disabled {
 
 .success {
   color: #2c7a2c;
-  font-size: 1.2rem;
-  padding: 15px;
-  background: rgba(40, 167, 69, 0.1);
-  border: 1px solid #d4edda;
-  border-radius: 8px;
-  margin-bottom: 20px;
+  font-size: 1.1rem;
+  padding: 10px;
+  background: rgba(40, 167, 69, 0.05);
+  border-radius: 6px;
+  margin-bottom: 12px;
   font-weight: 600;
+}
+
+.id-highlight {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2c3e50;
+  display: block;
+  margin: 10px auto;
+  background: rgba(255, 193, 7, 0.15);
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ffc107;
+  letter-spacing: 1px;
+  max-width: 80%;
 }
 
 .error {
@@ -167,11 +254,12 @@ button:disabled {
   color: #dc3545;
   font-size: 0.9rem;
   text-align: left;
-  margin-top: -10px;
+  margin-top: 5px;
   margin-bottom: 10px;
   display: none;
+  font-weight: 500;
 }
-/* Add these new styles */
+
 .click-hint {
   color: #2c7a2c;
   font-size: 0.9rem;
@@ -182,24 +270,25 @@ button:disabled {
 .id-container {
   display: flex;
   align-items: center;
-  margin: 8px 0;
+  margin: 15px 0;
+  justify-content: space-between;
 }
 
-.highlight-id {
-  /* Your existing highlight-id styles */
+.clickable-id {
   cursor: pointer;
   transition: all 0.3s ease;
-  padding: 10px 15px;
+  padding: 12px 20px;
   position: relative;
   flex-grow: 1;
+  text-align: center;
 }
 
-.highlight-id:hover {
+.clickable-id:hover {
   background-color: rgba(40, 167, 69, 0.2);
   transform: translateX(5px);
 }
 
-.highlight-id.clicked {
+.clickable-id.clicked {
   background-color: rgba(40, 167, 69, 0.3);
 }
 
@@ -228,6 +317,52 @@ button:disabled {
   }
 }
 
-.highlight-id:active {
+.clickable-id:active {
   animation: pulse 0.3s ease;
+}
+
+/* Dashboard button styles */
+.dashboard-button {
+  background: #ffc107;
+  color: #2c3e50;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 6px;
+  margin-top: 5px;
+  display: inline-block;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  border: none;
+  cursor: pointer;
+  font-family: "Raleway", sans-serif;
+  font-size: 0.9rem;
+  height: auto;
+}
+
+.dashboard-button:hover {
+  background: #ffca2c;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+}
+
+.dashboard-button:active {
+  transform: translateY(1px);
+}
+
+/* ID result card style */
+.id-result-card {
+  background: #f8fff8;
+  border-radius: 10px;
+  padding: 12px;
+  margin-top: 18px;
+  border: 1px solid #d4edda;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+}
+
+.id-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
+  gap: 10px;
 }

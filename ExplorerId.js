@@ -12,9 +12,9 @@ const elements = {
   email: document.getElementById("userEmail"),
   emailValidation: document.getElementById("emailValidation"),
   submitButton: document.getElementById("fetchID"),
-
   resultDiv: document.getElementById("result"),
   spinner: document.getElementById("loadingSpinner"),
+ searchSection: document.getElementById("searchSection"),
 };
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -162,60 +162,118 @@ function showError(message, showAlternative = false) {
   const errorHtml = `<p class='error'>${sanitizeHtml(message)}</p>`;
   const alternativeHtml = showAlternative
     ? `<div class='alternative-help'>
-    No ID found for this email. Please use the email you registered with Nobel.
-     </div>`
+       No ID found for this email. Please use the email you registered with Nobel.
+       </div>`
     : "";
-
-  elements.resultDiv.innerHTML = alternativeHtml;
+   elements.searchSection.classList.remove("hidden");
+  elements.resultDiv.innerHTML = errorHtml + alternativeHtml;
+ 
 }
 
 function displayIds(ids) {
   if (!ids || !ids.length) return;
 
-  const fragment = document.createDocumentFragment();
-  const successMsg = document.createElement("p");
-  successMsg.className = "success";
-  successMsg.textContent = `Here ${
-    ids.length > 1 ? "are" : "is"
-  } your Explorer ID${ids.length > 1 ? "s" : ""}:`;
-  fragment.appendChild(successMsg);
+  const resultCard = document.createElement("div");
+  resultCard.className = "id-result-card";
+  elements.searchSection.classList.add("hidden");
+  if (ids.length === 1) {
+    // For single ID, display it directly in the success message
+    const successMsg = document.createElement("p");
+    successMsg.className = "success";
+    successMsg.innerHTML = `Your Explorer ID: <span class="id-highlight">${ids[0]}</span>`;
+    resultCard.appendChild(successMsg);
 
-  const clickHint = document.createElement("p");
-  clickHint.className = "click-hint";
-  clickHint.textContent = "Click on your ID to view your dashboard →";
-  fragment.appendChild(clickHint);
+    const idActions = document.createElement("div");
+    idActions.className = "id-actions";
 
-  ids.forEach((id) => {
-    const idContainer = document.createElement("div");
-    idContainer.className = "id-container";
-
-    const idDiv = document.createElement("div");
-    idDiv.className = "highlight-id clickable-id";
-    idDiv.textContent = id;
-    idDiv.dataset.id = id;
-
-    const arrowIcon = document.createElement("span");
-    arrowIcon.className = "arrow-icon";
-    arrowIcon.innerHTML = "&rarr;";
-
-    idContainer.appendChild(idDiv);
-    idContainer.appendChild(arrowIcon);
-    fragment.appendChild(idContainer);
+    // Smaller dashboard button
+    const dashboardButton = document.createElement("button");
+    dashboardButton.className = "dashboard-button";
+    dashboardButton.textContent = "Go to Dashboard";
+    dashboardButton.dataset.id = ids[0];
+    dashboardButton.addEventListener("click", function () {
+      const explorerId = this.dataset.id;
+      // Redirect without showing the spinner
+      window.location.href = `${config.dashboardURL}#${encodeURIComponent(
+        explorerId
+      )}`;
+    });
+    // Add back button
+  const backButton = document.createElement("button");
+  backButton.className = "back-button";
+  backButton.textContent = "Back to Search";
+  backButton.addEventListener("click", function() {
+    elements.searchSection.classList.remove("hidden");
+    elements.resultDiv.innerHTML = "";
   });
+  
+  // Add it to your result card
+ 
+
+    idActions.appendChild(dashboardButton);
+    resultCard.appendChild(idActions);
+    resultCard.appendChild(backButton);
+  } else {
+    // For multiple IDs, keep the selection interface
+    const successMsg = document.createElement("p");
+    successMsg.className = "success";
+    successMsg.textContent = `Here are your Explorer IDs:`;
+    resultCard.appendChild(successMsg);
+
+    ids.forEach((id) => {
+      const idContainer = document.createElement("div");
+      idContainer.className = "id-container";
+
+      const idDiv = document.createElement("div");
+      idDiv.className = "highlight-id clickable-id";
+      idDiv.textContent = id;
+      idDiv.dataset.id = id;
+
+      const arrowIcon = document.createElement("span");
+      arrowIcon.className = "arrow-icon";
+      arrowIcon.innerHTML = "&rarr;";
+
+      idContainer.appendChild(idDiv);
+      idContainer.appendChild(arrowIcon);
+      resultCard.appendChild(idContainer);
+    });
+
+    const idActions = document.createElement("div");
+    idActions.className = "id-actions";
+
+    // Multiple ID case dashboard button
+    const dashboardButton = document.createElement("button");
+    dashboardButton.className = "dashboard-button";
+    dashboardButton.textContent = "Go to Dashboard";
+    dashboardButton.dataset.id = ids[0]; // Use the first ID by default
+    dashboardButton.addEventListener("click", function () {
+      const explorerId = this.dataset.id;
+      // Redirect without showing the spinner
+      window.location.href = `${config.dashboardURL}#${encodeURIComponent(
+        explorerId
+      )}`;
+    });
+
+    idActions.appendChild(dashboardButton);
+    resultCard.appendChild(idActions);
+  }
 
   elements.resultDiv.innerHTML = "";
-  elements.resultDiv.appendChild(fragment);
+  elements.resultDiv.appendChild(resultCard);
+
 
   document.querySelectorAll(".clickable-id").forEach((element) => {
     element.addEventListener("click", function () {
       const explorerId = this.dataset.id;
 
-      this.classList.add("clicked");
+  
+      document.querySelector(".dashboard-button").dataset.id = explorerId;
 
-      window.location.href = `${config.dashboardURL}#${encodeURIComponent(
-        explorerId
-      )}`;
-      elements.spinner.style.display = "block";
+  
+      document.querySelectorAll(".clickable-id").forEach((el) => {
+        el.classList.remove("clicked");
+      });
+      this.classList.add("clicked");
     });
   });
 }

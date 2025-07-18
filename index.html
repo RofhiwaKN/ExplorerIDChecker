@@ -12,35 +12,40 @@
       type="image/x-icon"
     />
     <link
-      href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="ExplorerId.css" />
   </head>
   <body>
     <div class="container">
-      <h3>Look Up Your Explorer ID</h3>
-      <p class="instruction">
-        Enter the email address you used when signing up for Nobel
-      </p>
-
-      <form id="idLookupForm">
-        <input
-          type="email"
-          id="userEmail"
-          placeholder="Email address"
-          autofocus
-        />
-        <div id="emailValidation" class="validation-message">
-          Please enter a valid email address
+      <div class="search-section" id="searchSection">
+        <div class="header">
+          <h3>Explorer ID Look Up</h3>
+          <p class="instruction">
+            Enter the email you signed up with to find your Explorer ID.
+          </p>
         </div>
-        <button type="submit" id="fetchID">Search</button>
-      </form>
-
+        <form id="idLookupForm">
+          <div class="input-group">
+            <input
+              type="email"
+              id="userEmail"
+              placeholder="Email address"
+              autofocus
+            />
+            <div id="emailValidation" class="validation-message">
+              Please enter a valid email address
+            </div>
+          </div>
+          <button type="submit" id="fetchID">
+            <span class="button-text">Search</span>
+          </button>
+        </form>
+      </div>
       <div class="loading" id="loadingSpinner"></div>
       <div id="result"></div>
     </div>
-
     <script src="ExplorerId.js"></script>
   </body>
 </html>
